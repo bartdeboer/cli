@@ -5,18 +5,15 @@
 package cli
 
 import (
-	"github.com/bartdeboer/cobra"
+	"github.com/spf13/cobra"
 )
 
 type Command struct {
 	Command   *cobra.Command
 	GetConfig func(cmd *Command, args []string) interface{}
+	ConfigKey string
 	parent    *Command
 	commands  []*Command
-}
-
-func (c *Command) GetCommand() *cobra.Command {
-	return c.Command
 }
 
 func (c *Command) AddCommand(cmds ...*Command) {
@@ -29,4 +26,20 @@ func (c *Command) AddCommand(cmds ...*Command) {
 		c.commands = append(c.commands, cc)
 		c.Command.AddCommand(cc.Command)
 	}
+}
+
+func (c *Command) AddCobraCommand(cmds ...*cobra.Command) {
+	for _, cc := range cmds {
+		c.AddCommand(&Command{
+			Command: cc,
+		})
+	}
+}
+
+func (c *Command) Parent() *Command {
+	return c.parent
+}
+
+func (c *Command) Execute() error {
+	return c.Command.Execute()
 }
